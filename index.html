@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <h2>Upload Excel File</h2>
+    <form id="uploadForm">
+        <label>Store Name & ID:</label>
+        <input type="text" id="storeName" required><br><br>
+        <input type="file" id="fileInput" accept=".xls" required><br><br>
+        <button type="button" onclick="processFile()">Generate QR Codes</button>
+    </form>
+
+    <h3>QR Codes Preview</h3>
+    <div id="qrContainer" style="display: flex; flex-wrap: wrap;"></div>
+
+    <button id="downloadPDF" style="display:none;" onclick="generatePDF()">Download PDF</button>
+
+    <script>
+        async function processFile() {
+            const fileInput = document.getElementById("fileInput").files[0];
+            const storeName = document.getElementById("storeName").value;
+            if (!fileInput || !storeName) {
+                alert("Please provide Store Name & ID and upload a file.");
+                return;
+            }
+
+            // Read Excel file
+            const reader = new FileReader();
+            reader.onload = async function (event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(sheet, {header: 1});
+
+                generateQRCodes(jsonData);
+                document.getElementById("downloadPDF").style.display = "block";
+            };
+            reader.readAsArrayBuffer(fileInput);
+        }
+
+        function generateQRCodes(data) {
+            const qrContainer = document.getElementById("qrContainer");
+            qrContainer.innerHTML = "";
+
+            for (let i = 0; i < data.length; i++) { // Skip header row
+                const sn = data[i][0];
+                const reg = data[i][1];
+                if (!sn || !reg) continue;
+
+                const qrDiv = document.createElement("div");
+                qrDiv.style.border = "1px solid #000";
+                qrDiv.style.padding = "5px";
+                qrDiv.style.margin = "10px";
+                qrDiv.style.textAlign = "center";
+                qrDiv.style.width = "120px";
+                qrDiv.style.display = "inline-block"
+                qrDiv.id = "qrDiv"
+
+
+                // `https://qrbatch.com/?sn=${sn}`
+
+                const qrDivWrap = document.createElement("div")
+                qrDivWrap.style.textAlign = "center"
+
+                const qrCode = new QRCode(qrDivWrap, {
+                    text: `${sn}`,
+                    width: 100,
+                    height: 100,
+                });
+
+
+
+                const snText = document.createElement("div");
+                snText.textContent = `${sn}`;
+                snText.style.fontSize = "13px";
+                snText.style.fontWeight = "bold";
+                snText.style.marginTop = "5px";
+
+                const regText = document.createElement("div");
+                regText.textContent = `${reg}`;
+                regText.style.fontSize = "13px";
+
+                qrDiv.appendChild(qrDivWrap);
+                qrDiv.appendChild(snText);
+                qrDiv.appendChild(regText);
+                
+ 
+                qrContainer.appendChild(qrDiv);
+            }
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', [101, 127]); // 4x6 inches in mm
+
+            const marginX = 4;
+            const marginY = 2;
+            const qrSize = 22;
+            const spacingX = qrSize + 6; // Space between columns
+            const spacingY = qrSize + 15; // Space between rows (QR + text)
+
+            let x = marginX;
+            let y = marginY;
+            const qrElements = document.querySelectorAll("#qrContainer #qrDiv");
+
+            qrElements.forEach((el, index) => {
+                for(let i = 0; i < 2; i++){
+                    const canvas = el.querySelector("canvas");
+                    if (canvas) {
+                        pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, qrSize, qrSize);
+                        pdf.setFontSize(7); // Adjust text size
+                        pdf.text(el.innerText, x + qrSize / 2, y + qrSize + 4, { align: "center" });
+                    }
+
+                    // Move to the next column
+                    x += spacingX;
+
+                    // Move to the next row after 3 columns
+                    if ((index * 2 + i + 1) % 3 === 0) {
+                        x = marginX;
+                        y += spacingY;
+                    }
+
+                    // Start a new page after 9 QR codes
+                    if ((index * 2 + i + 1) % 9 === 0) {
+                        pdf.addPage();
+                        x = marginX;
+                        y = marginY;
+                    }
+                }
+            });
+
+            pdf.save(`qrcodes_for_${document.getElementById("storeName").value}.pdf`);
+        }
+    </script>
+    <style>
+        img {
+            display: inline !important;
+        }
+    </style>
+</body>
+</html>
