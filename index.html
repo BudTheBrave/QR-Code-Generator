@@ -7,25 +7,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <h2>Upload Excel File</h2>
+    <h2>QR Register / SCO Generator</h2>
+    <hr>
+
+    <h4 style="margin: 3px;"><b>Excel Notes:</b></h4>
+    <ul>
+        <li>Do not have headers in excel</li>
+        <li>Column A: SN number</li>
+        <li>Column B: Register Number</li>
+    </ul>
+    <hr>
+
     <form id="uploadForm">
-        <label>Store Name & ID:</label>
+        <label>Store Name:</label>
         <input type="text" id="storeName" required><br><br>
+        <label>Site Number:</label>
+        <input type="text" id="siteNumber" required><br><br>
+        <label>City:</label>
+        <input type="text" id="city" required><br><br>
+        <label>State:</label>
+        <input type="text" id="state" required><br><br>
         <input type="file" id="fileInput" accept=".xls" required><br><br>
         <button type="button" onclick="processFile()">Generate QR Codes</button>
     </form>
 
-    <h3>QR Codes Preview</h3>
+    <hr>
+    
+    <h3 style="margin-bottom: 3px;">QR Codes Preview</h3>
+    <p><b>PDF Download at bottom of page</b></p>
     <div id="qrContainer" style="display: flex; flex-wrap: wrap;"></div>
 
+    <hr>
+
+    <h4><b>Printing Notes:</b></h4>
+    <ul>
+        <li>
+            Use Crome
+        </li>
+        <li>
+            In more setting make sure to have paper size is CE_5in, created previously as per the guide.
+        </li>
+        <li>
+            Make sure scale is default
+        </li>
+        <li>
+            Make sure printer properties has all cropping set to 0
+        </li>
+    </ul>
     <button id="downloadPDF" style="display:none;" onclick="generatePDF()">Download PDF</button>
 
     <script>
         async function processFile() {
             const fileInput = document.getElementById("fileInput").files[0];
             const storeName = document.getElementById("storeName").value;
-            if (!fileInput || !storeName) {
-                alert("Please provide Store Name & ID and upload a file.");
+            const siteNumber = document.getElementById("siteNumber").value;
+            const city = document.getElementById("city").value;
+            const state = document.getElementById("state").value;
+
+            if (!fileInput || !storeName || !siteNumber || !city || !state) {
+                alert("Please provide all information and upload a file.");
                 return;
             }
 
@@ -135,7 +175,7 @@
                 }
             });
 
-            pdf.save(`qrcodes_for_${document.getElementById("storeName").value}.pdf`);
+            pdf.save(`QR_Code_for_${document.getElementById("storeName").value}_${document.getElementById("siteNumber").value}_${document.getElementById("city").value}_${document.getElementById("state").value}.pdf`);
         }
     </script>
     <style>
