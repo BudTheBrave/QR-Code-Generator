@@ -32,7 +32,7 @@
     </form>
 
     <hr>
-    
+
     <h3 style="margin-bottom: 3px;">QR Codes Preview</h3>
     <p><b>PDF Download at bottom of page</b></p>
     <div id="qrContainer" style="display: flex; flex-wrap: wrap;"></div>
@@ -139,7 +139,7 @@
             const pdf = new jsPDF('p', 'mm', [101, 127]); // 4x6 inches in mm
 
             const marginX = 4;
-            const marginY = 2;
+            const marginY = 0;
             const qrSize = 22;
             const spacingX = qrSize + 6; // Space between columns
             const spacingY = qrSize + 10; // Space between rows (QR + text)
@@ -153,7 +153,7 @@
                     const canvas = el.querySelector("canvas");
                     if (canvas) {
                         pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, y, qrSize, qrSize);
-                        pdf.setFontSize(7); // Adjust text size
+                        pdf.setFontSize(9); // Adjust text size
                         pdf.text(el.innerText, x + qrSize / 2, y + qrSize + 4, { align: "center" });
                     }
 
