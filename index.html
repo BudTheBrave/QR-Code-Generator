@@ -98,11 +98,11 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', [101, 127]); // 4x6 inches in mm
 
-            const marginX = 5;
+            const marginX = 4;
             const marginY = 2;
             const qrSize = 22;
-            const spacingX = qrSize + 8; // Space between columns
-            const spacingY = qrSize + 12; // Space between rows (QR + text)
+            const spacingX = qrSize + 6; // Space between columns
+            const spacingY = qrSize + 10; // Space between rows (QR + text)
 
             let x = marginX;
             let y = marginY;
